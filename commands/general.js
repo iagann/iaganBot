@@ -1,4 +1,5 @@
-const repoCommands = require('./repo');
+const repoCommandsRu = require('./repo_ru');
+const repoCommandsEn = require('./repo_en');
 
 module.exports = {
     '!reload': { 
@@ -50,7 +51,7 @@ module.exports = {
                 .filter(([name, cmd]) => !cmd.admin) // Убираем админские
                 .map(([name, cmd]) => name);        // Оставляем только названия
                 
-            const available = visibleCommands.join(', ');
+            const available = visibleCommands.join(' ');
             deps.say(target, context, `Доступные команды: ${available}`);
         }
     },
@@ -58,17 +59,28 @@ module.exports = {
     '!репо': {
         public: true,
         execute: (deps, target, context) => {
-            // Берем только ключи (названия команд) из объекта repoCommands
-            const keys = Object.keys(repoCommands);
-            
-            if (keys.length === 0) {
-                return deps.say(target, context, `@${context.username}, команд для R.E.P.O. пока нет. 🛠️`);
-            }
+            const keys = Object.keys(repoCommandsRu);
+            if (keys.length === 0) return deps.say(target, context, `@${context.username}, команд пока нет. 🛠️`);
 
-            // Собираем их в строку через запятую
-            const commandList = keys.join(', ');
-            
-            deps.say(target, context, `Команды для R.E.P.O.: ${commandList}`);
+            // Разделяем на спецэффекты и мобов для читаемости
+            const effects = keys.filter(k => !repoCommandsRu[k].isSpawn).join(' ');
+            const spawns = keys.filter(k => repoCommandsRu[k].isSpawn).join(' ');
+
+            deps.say(target, context, `Команды R.E.P.O.: Действия: ${effects} | Враги: ${spawns}`);
+        }
+    },
+
+    // --- Английская справка ---
+    '!repo': {
+        public: true,
+        execute: (deps, target, context) => {
+            const keys = Object.keys(repoCommandsEn);
+            if (keys.length === 0) return deps.say(target, context, `@${context.username}, no commands yet. 🛠️`);
+
+            const effects = keys.filter(k => !repoCommandsEn[k].isSpawn).join(', ');
+            const spawns = keys.filter(k => repoCommandsEn[k].isSpawn).join(', ');
+
+            deps.say(target, context, `R.E.P.O. Commands: Actions: ${effects} | Enemies: ${spawns}`);
         }
     },
 }

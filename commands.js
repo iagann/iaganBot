@@ -14,7 +14,11 @@ function loadCommands() {
     const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
     for (const file of commandFiles) {
-        if (file === 'repo.js' && !config.repoEnabled) {
+        if (file === 'repo_ru.js' && !config.repoEnabled) {
+            console.log(`[Loader] Пропускаю ${file}, так как R.E.P.O. выключен в конфиге.`);
+            continue;
+        }
+        if (file === 'repo_en.js' && !config.repoEnabled) {
             console.log(`[Loader] Пропускаю ${file}, так как R.E.P.O. выключен в конфиге.`);
             continue;
         }

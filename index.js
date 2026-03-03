@@ -3,9 +3,8 @@ let { client } = require('./connection');
 let { loadCommands } = require('./commands'); // Импорт загрузчика
 let { commandWrapper } = require('./wrappers');
 let config = require('./config');
-let robot = require('robotjs');
 let { initTerminal } = require('./terminal');
-let chat = require('./commands/chat');
+//let chat = require('./commands/chat');
 
 // Инициализируем команды
 let commands = loadCommands();
@@ -26,21 +25,27 @@ const reloadAll = () => {
 
 const deps = { 
     client, 
-    robot, 
     config, 
     reloadAll,
     getCommands: () => commands,
     // Создаем безопасную функцию отправки сообщений
     say: (target, context, message) => {
-        const myChannel = '#iagan3228'; // Твой канал (обязательно с решеткой)
+        console.log(`Отвечаю: ${message}`);
+
+        if (config.replyEnabled === false)
+            return;
+
+        const myChannel = '#iagan3228';
         const myName = myChannel.replace('#', '');
-        const isMyChannel = target.toLowerCase() === '#iagan3228';
+        const isMyChannel = target.toLowerCase() === myChannel;
         const isSentByMe = context && context.username.toLowerCase() === myName;
         
         if (isMyChannel || isSentByMe) {
-            client.say(target, message);
+            // Добавляем .catch() для обработки дисконнекта
+            client.say(target, message).catch(err => {
+                console.error(`[Twitch Error] Не удалось отправить сообщение: ${err}`);
+            });
         } else {
-            // В чужом чате на команды других просто молчим в консоль
             console.log(`[Shield] Игнорирую ответ для ${context?.username} в чужом чате ${target}`);
         }
     }
