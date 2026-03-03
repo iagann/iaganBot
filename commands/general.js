@@ -43,19 +43,31 @@ module.exports = {
     },
 
     '!команды': { 
-        execute: (deps, target) => {
-            const allCommands = deps.getCommands();
+        execute: (deps, target, context) => {
+            const allCommands = deps.getCommands(); // Это объект {} согласно твоему лоадеру
             
-            // Фильтруем: оставляем только те, у которых НЕТ флага admin (или он false)
+            // Ссылки на объекты-словари из repo_ru.js и repo_en.js
+            const internalExcludes = [repoCommandsRu, repoCommandsEn];
+            
+            // Превращаем объект в массив [имя, данные] и фильтруем
             const visibleCommands = Object.entries(allCommands)
-                .filter(([name, cmd]) => !cmd.admin) // Убираем админские
-                .map(([name, cmd]) => name);        // Оставляем только названия
+                .filter(([name, cmd]) => {
+                    // 1. Убираем админские (где admin: true)
+                    if (cmd.admin) return false;
+
+                    // 2. Проверяем, есть ли имя (name) текущей команды в REPO-файлах
+                    // Используем оператор 'in', чтобы проверить наличие ключа в объекте
+                    const isRepoCommand = internalExcludes.some(repo => name in repo);
+
+                    return !isRepoCommand;
+                })
+                .map(([name, cmd]) => name); // Оставляем только названия
                 
             const available = visibleCommands.join(' ');
             deps.say(target, context, `Доступные команды: ${available}`);
         }
     },
-
+    
     '!репо': {
         public: true,
         execute: (deps, target, context) => {

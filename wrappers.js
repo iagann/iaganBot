@@ -3,8 +3,8 @@ const cooldowns = new Set();
 
 function commandWrapper(deps, action, context) {
     const { config } = deps; // Берем актуальный конфиг
-    //const user = context.username;
-    const user = "global";
+    const user = context.username;
+    //const user = "global";
 
     if (cooldowns.has(user)) {
         console.log(`[Cooldown] ${user} ждет...`);

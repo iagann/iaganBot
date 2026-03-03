@@ -18,7 +18,7 @@ module.exports = {
     '!пёс':    { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'ru', 'Enemy - Elsa', 'Elsa', '🐶') },
     '!велик':  { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'ru', 'Enemy - Tricycle', 'Tricycle', '🚲') },
     '!пацан':  { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'ru', 'Enemy - Birthday boy', 'Birthday', '🎂') },
-    '!клещ':   { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'ru', 'Enemy - Tick', 'Tick', '🕷️') },
+    // '!клещ':   { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'ru', 'Enemy - Tick', 'Tick', '🕷️') },
     '!блевота':{ isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'ru', 'Enemy - Slow Mouth', 'SlowMouth', '👄') },
 
     // --- ВРАГИ (Сложность 2) ---
@@ -38,7 +38,7 @@ module.exports = {
     '!чорт':     { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'ru', 'Enemy - Head Grabber', 'HeadGrabber', '🤚') },
     '!комар':    { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'ru', 'Enemy - Oogly', 'Oogly', '👹') },
     '!дед':      { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'ru', 'Enemy - Hunter', 'Hunter', '🏹') },
-    '!бабка':    { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'ru', 'Enemy - Shadow', 'Shadow', '👤') },
+    // '!бабка':    { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'ru', 'Enemy - Shadow', 'Shadow', '👤') },
     '!жвачка':   { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'ru', 'Enemy - Bomb Thrower', 'BombThrower', '💣') },
     '!монашка':  { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'ru', 'Enemy - Robe', 'Robe', '⛪') },
     '!кукла':    { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'ru', 'Enemy - Runner', 'Runner', '🏃') },

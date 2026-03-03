@@ -79,4 +79,23 @@ client.on('message', (target, context, msg, self) => {
     }
 });
 
-client.connect();
+client.on('reconnect', () => {
+    console.log('[Twitch] Попытка переподключения...');
+});
+
+let connected = false;
+    while (!connected) {
+        try {
+            console.log('[Twitch] Попытка подключения...');
+            await client.connect();
+            console.log('[Twitch] Успешно подключено!');
+            connected = true; 
+        } catch (err) {
+            console.error(`[Ошибка] Не удалось зайти: ${err.message || err}`);
+            console.log(`[Twitch] Следующая попытка через ${CONNECT_DELAY / 1000} сек...`);
+            
+            // Ждем перед следующей итерацией цикла
+            await new Promise(resolve => setTimeout(resolve, CONNECT_DELAY));
+        }
+    }
+
