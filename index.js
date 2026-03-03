@@ -84,18 +84,26 @@ client.on('reconnect', () => {
 });
 
 let connected = false;
+const CONNECT_INTERVAL = 5000;
+(async () => {
+    let connected = false;
+
     while (!connected) {
         try {
             console.log('[Twitch] Попытка подключения...');
-            await client.connect();
+            await client.connect(); 
             console.log('[Twitch] Успешно подключено!');
             connected = true; 
         } catch (err) {
             console.error(`[Ошибка] Не удалось зайти: ${err.message || err}`);
-            console.log(`[Twitch] Следующая попытка через ${CONNECT_DELAY / 1000} сек...`);
+            console.log(`[Twitch] Следующая попытка через ${CONNECT_INTERVAL / 1000} сек...`);
             
-            // Ждем перед следующей итерацией цикла
-            await new Promise(resolve => setTimeout(resolve, CONNECT_DELAY));
+            // Явное определение промиса для паузы
+            await new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve(); // Вызываем resolve, когда таймер истек
+                }, CONNECT_INTERVAL);
+            });
         }
     }
-
+})();
