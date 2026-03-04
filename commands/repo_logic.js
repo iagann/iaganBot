@@ -72,6 +72,30 @@ const core = {
             commandsObj[randomKey].execute(deps, target, context);
         }
     },
+    setLifespan: (deps, target, context, locale, args) => {
+        // Проверяем, ввел ли пользователь число
+        const newTime = parseInt(args[0]);
+        
+        if (isNaN(newTime)) {
+            return deps.say(target, context, locale === 'ru' 
+                ? `@${context.username}, укажите число секунд (напр. !таймер 60)` 
+                : `@${context.username}, specify seconds (e.g. !lifespan 60)`);
+        }
+
+        // Ограничиваем на стороне бота (от 5 до 300 сек)
+        const validatedTime = Math.min(Math.max(newTime, 5), 300);
+
+        runAction(deps, "SetLifespan", () => {
+            sendToGame(`spawn/lifespan/${validatedTime}`);
+            
+            const msg = locale === 'ru'
+                ? `Время жизни врагов установлено на ${validatedTime}с. ⏱️`
+                : `Enemy lifespan set to ${validatedTime}s. ⏱️`;
+                
+            deps.say(target, context, `@${context.username}, ${msg}`);
+        });
+    },
+
     god: (deps, target, context, locale, state) => {
         runAction(deps, "GodMode", () => {
             isGodMode = state;

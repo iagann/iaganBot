@@ -48,4 +48,6 @@ module.exports = {
     
     // рандомный
     '!враг': { isSpawn: true, execute: (d, t, c) => core.randomEnemy(d, t, c, module.exports, '!враг') },
+
+    '!таймер': { admin: true, execute: (d, t, c, a) => core.setLifespan(d, t, c, 'ru', a) },
 };

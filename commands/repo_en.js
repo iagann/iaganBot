@@ -46,4 +46,6 @@ module.exports = {
 
     // random
     '!enemy': { isSpawn: true, execute: (d, t, c) => core.randomEnemy(d, t, c, module.exports, '!enemy') },
+
+    '!lifespan': { admin: true, execute: (d, t, c, a) => core.setLifespan(d, t, c, 'en', a) },
 };
