@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>REPO Overlay</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+        /* Весь CSS оставляем без изменений */
+        body { 
+            margin: 0; padding: 0; background: transparent; 
+            overflow: hidden; font-family: 'Consolas', monospace; 
+            height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; 
+        }
+        #log-container { padding: 20px; display: flex; flex-direction: column; align-items: flex-start; }
+        .log-line { 
+            background: rgba(0, 0, 0, 0.8); color: #00ffcc; text-shadow: 1px 1px 2px #000;
+            border-radius: 4px; border-left: 4px solid #00ffcc; font-size: 22px;
+            white-space: pre-wrap; width: fit-content; overflow: hidden;
+            animation: lifeCycle 12s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        .log-line.error { border-left-color: #ff4444; color: #ff8888; }
+        @keyframes lifeCycle {
+            0% { opacity: 0; transform: translateY(20px); max-height: 0; margin-bottom: 0; padding: 0px 18px; }
+            4% { opacity: 1; transform: translateY(0); max-height: 200px; margin-bottom: 8px; padding: 10px 18px; }
+            88% { opacity: 1; transform: translateY(0); max-height: 200px; margin-bottom: 8px; padding: 10px 18px; }
+            100% { opacity: 0; transform: translateY(-40px); max-height: 0; margin-bottom: 0; padding: 0px 18px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="log-container"></div>
+
+    <script>
+        // Ждем полной загрузки страницы, прежде чем инициализировать логику
+        window.addEventListener('DOMContentLoaded', (event) => {
+            const socket = io("http://localhost:3005");
+            const container = document.getElementById('log-container');
+            let lastSeenCount = -1;
+
+            if (!container) {
+                console.error("КРИТИЧЕСКАЯ ОШИБКА: #log-container не найден!");
+                return;
+            }
+
+            function addMessage(text) {
+                if (!text.trim()) return;
+                const line = document.createElement('div');
+                line.className = 'log-line';
+                if (text.toLowerCase().includes('ошибка') || text.toLowerCase().includes('failed')) {
+                    line.classList.add('error');
+                }
+                line.textContent = text;
+                container.appendChild(line);
+                setTimeout(() => { line.remove(); }, 12000);
+            }
+
+            socket.on('logUpdate', (data) => {
+                if (!data) return;
+                const lines = data.split('\n');
+                lines.forEach(line => {
+                    if (line.trim()) addMessage(line.trim());
+                });
+            });
+
+            socket.on('logReset', () => {
+                container.innerHTML = '';
+                lastSeenCount = 0;
+            });
+
+            socket.on('connect', () => console.log("Успешное подключение к серверу логов!"));
+        });
+    </script>
+</body>

@@ -9,6 +9,8 @@ module.exports = {
     // --- Stats & HP ---
     '!god':    { execute: (d, t, c) => core.god(d, t, c, 'en', true) },
     '!mortal': { execute: (d, t, c) => core.god(d, t, c, 'en', false) },
+    '!stamina':      { execute: (d, t, c) => core.stamina(d, t, c, 'ru', true) },
+    '!tired':      { execute: (d, t, c) => core.stamina(d, t, c, 'ru', false) },
     '!heal':   { execute: (d, t, c, a) => core.health(d, t, c, 'en', 'heal', a) },
     '!damage': { execute: (d, t, c, a) => core.health(d, t, c, 'en', 'damage', a) },
 

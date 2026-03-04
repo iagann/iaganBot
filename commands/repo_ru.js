@@ -11,6 +11,8 @@ module.exports = {
     // --- СТАТУСЫ И ХП ---
     '!бог':      { execute: (d, t, c) => core.god(d, t, c, 'ru', true) },
     '!смертный': { execute: (d, t, c) => core.god(d, t, c, 'ru', false) },
+    '!атлет':      { execute: (d, t, c) => core.stamina(d, t, c, 'ru', true) },
+    '!дрыщ':      { execute: (d, t, c) => core.stamina(d, t, c, 'ru', false) },
     '!хил':      { execute: (d, t, c, a) => core.health(d, t, c, 'ru', 'heal', a) },
     '!урон':     { execute: (d, t, c, a) => core.health(d, t, c, 'ru', 'damage', a) },
 

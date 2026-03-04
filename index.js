@@ -5,6 +5,8 @@ let { commandWrapper } = require('./wrappers');
 let config = require('./config');
 let { initTerminal } = require('./terminal');
 //let chat = require('./commands/chat');
+const repoLog = require('./repoLogOverlay/repoLog');
+
 
 // Инициализируем команды
 let commands = loadCommands();
@@ -107,3 +109,10 @@ const CONNECT_INTERVAL = 5000;
         }
     }
 })();
+
+if (config.repoEnabled) {
+    console.log("[SYSTEM] Мод REPO включен в конфиге. Запускаю мониторинг логов...");
+    repoLog.init();
+} else {
+    console.log("[SYSTEM] Мод REPO выключен.");
+}

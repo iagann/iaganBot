@@ -104,6 +104,14 @@ const core = {
             deps.say(target, context, `@${msg}`);
         });
     },
+    stamina: (deps, target, context, locale, state) => {
+        runAction(deps, "InfiniteStamina", () => {
+            isGodMode = state;
+            const msg = state ? lang[locale].stamina_on(context.username) : lang[locale].stamina_off(context.username);
+            sendToGame(state ? 'stamina/on' : 'stamina/off');
+            deps.say(target, context, `@${msg}`);
+        });
+    },
     health: (deps, target, context, locale, type, args) => {
         if (type === 'damage' && isGodMode) {
             return deps.say(target, context, lang[locale].damage_god(context.username));
