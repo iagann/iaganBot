@@ -1,5 +1,5 @@
 module.exports = {
-    replyEnabled: false,
+    replyEnabled: true,
     timeout: 0,
     //timeout: 2000,
     cooldownTime: 30000,

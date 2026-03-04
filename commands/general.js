@@ -71,14 +71,19 @@ module.exports = {
     '!репо': {
         public: true,
         execute: (deps, target, context) => {
-            const keys = Object.keys(repoCommandsRu);
+            // Сначала получаем список имен только тех команд, которые НЕ админские и НЕ публичные (справка)
+            const keys = Object.keys(repoCommandsRu).filter(k => {
+                const cmd = repoCommandsRu[k];
+                return !cmd.admin && !cmd.public;
+            });
+
             if (keys.length === 0) return deps.say(target, context, `@${context.username}, команд пока нет. 🛠️`);
 
-            // Разделяем на спецэффекты и мобов для читаемости
+            // Теперь разделяем отфильтрованный список на эффекты и мобов
             const effects = keys.filter(k => !repoCommandsRu[k].isSpawn).join(' ');
             const spawns = keys.filter(k => repoCommandsRu[k].isSpawn).join(' ');
 
-            deps.say(target, context, `Команды R.E.P.O.: Действия: ${effects} | Враги: ${spawns}`);
+            deps.say(target, context, `Команды R.E.P.O.: [Действия]: ${effects} | [Враги]: ${spawns}`);
         }
     },
 
@@ -86,13 +91,17 @@ module.exports = {
     '!repo': {
         public: true,
         execute: (deps, target, context) => {
-            const keys = Object.keys(repoCommandsEn);
+            const keys = Object.keys(repoCommandsEn).filter(k => {
+                const cmd = repoCommandsEn[k];
+                return !cmd.admin && !cmd.public;
+            });
+
             if (keys.length === 0) return deps.say(target, context, `@${context.username}, no commands yet. 🛠️`);
 
             const effects = keys.filter(k => !repoCommandsEn[k].isSpawn).join(', ');
             const spawns = keys.filter(k => repoCommandsEn[k].isSpawn).join(', ');
 
-            deps.say(target, context, `R.E.P.O. Commands: Actions: ${effects} | Enemies: ${spawns}`);
+            deps.say(target, context, `R.E.P.O. Commands: [Actions]: ${effects} | [Enemies]: ${spawns}`);
         }
     },
 }
