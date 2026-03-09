@@ -76,7 +76,8 @@ client.on('message', (target, context, msg, self) => {
 
         // Логика: выполняем если это мой канал ИЛИ если команда публичная
         if (isMyChannel || cmd.public === true) {
-            commandWrapper(deps, () => cmd.execute(deps, target, context, args), context);
+            // Добавили commandName в конце!
+            commandWrapper(deps, () => cmd.execute(deps, target, context, args), context, commandName);
         }
     }
 });

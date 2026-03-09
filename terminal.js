@@ -33,7 +33,7 @@ function initTerminal(deps, commandWrapper) {
         if (currentCommands[commandName]) {
             console.log(`[Console -> Bot] Исполняю: ${commandName}`);
             // Прогоняем через тот же ворпер, что и реальный чат
-            commandWrapper(deps, () => currentCommands[commandName].execute(deps, target, fakeContext, args), fakeContext);
+            commandWrapper(deps, () => currentCommands[commandName].execute(deps, target, fakeContext, args), fakeContext, commandName);
         } else {
             console.log(`[Console] Команда "${commandName}" не найдена.`);
         }
