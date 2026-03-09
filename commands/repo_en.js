@@ -14,6 +14,7 @@ module.exports = {
     '!heal':   { execute: (d, t, c, a) => core.health(d, t, c, 'en', 'heal', a) },
     '!damage': { execute: (d, t, c, a) => core.health(d, t, c, 'en', 'damage', a) },
 
+    '!enemy': { isSpawn: true, execute: (d, t, c) => core.randomEnemy(d, t, c, module.exports, '!enemy') },
     // --- Enemies Difficulty 1 ---
     '!elsa':     { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'en', 'Enemy - Elsa', 'Elsa', '👻') },
     '!tricycle': { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'en', 'Enemy - Tricycle', 'Tricycle', '🚲') },
@@ -45,9 +46,6 @@ module.exports = {
     '!beamer':   { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'en', 'Enemy - Beamer', 'Beamer', '🔦') },
     '!headman':  { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'en', 'Enemy - Head', 'Headman', '💀') },
     '!trudge':   { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'en', 'Enemy - Slow Walker', 'Trudge', '👣') },
-
-    // random
-    '!enemy': { isSpawn: true, execute: (d, t, c) => core.randomEnemy(d, t, c, module.exports, '!enemy') },
 
     '!lifespan': { admin: true, execute: (d, t, c, a) => core.setLifespan(d, t, c, 'en', a) },
 };

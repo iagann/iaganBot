@@ -16,6 +16,7 @@ module.exports = {
     '!хил':      { execute: (d, t, c, a) => core.health(d, t, c, 'ru', 'heal', a) },
     '!урон':     { execute: (d, t, c, a) => core.health(d, t, c, 'ru', 'damage', a) },
 
+    '!враг': { isSpawn: true, execute: (d, t, c) => core.randomEnemy(d, t, c, module.exports, '!враг') },
     // --- ВРАГИ (Сложность 1) ---
     '!пёс':    { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'ru', 'Enemy - Elsa', 'Elsa', '🐶') },
     '!велик':  { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'ru', 'Enemy - Tricycle', 'Tricycle', '🚲') },
@@ -47,9 +48,6 @@ module.exports = {
     '!клоун':    { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'ru', 'Enemy - Beamer', 'Beamer', '🔦') },
     '!череп':    { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'ru', 'Enemy - Head', 'Headman', '💀') },
     '!демон':    { isSpawn: true, execute: (d, t, c) => core.spawn(d, t, c, 'ru', 'Enemy - Slow Walker', 'Trudge', '👣') },
-    
-    // рандомный
-    '!враг': { isSpawn: true, execute: (d, t, c) => core.randomEnemy(d, t, c, module.exports, '!враг') },
 
     '!таймер': { admin: true, execute: (d, t, c, a) => core.setLifespan(d, t, c, 'ru', a) },
 };
