@@ -43,7 +43,7 @@ const core = {
         runAction(deps, "Crouch", () => {
             const msg = lang[locale].crouch(context.username);
             deps.say(target, context, `@${msg} 🦆`);
-            sendToGame('crouch_5s');
+            sendToGame('crouch');
             sendToGame('msg', msg);
         });
     },

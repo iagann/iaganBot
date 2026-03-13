@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R.E.P.O. Commands</title>
+    <style>
+        :root {
+            --bg-color: #0b0e11;
+            --panel-color: #1a1f26;
+            --accent-color: #00ffcc;
+            --text-color: #e0e0e0;
+            --desc-color: #a0a0a0;
+            --hover-color: #252c36;
+            --category-bg: rgba(0, 255, 204, 0.05);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+        }
+
+        .hint {
+            color: var(--desc-color);
+            font-style: italic;
+            background: var(--panel-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--accent-color);
+            display: inline-block;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .command-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--panel-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            margin-bottom: 50px;
+        }
+
+        .cat-row {
+            background-color: var(--category-bg);
+        }
+
+        .cat-row td {
+            color: var(--accent-color);
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.8em;
+            letter-spacing: 1px;
+            padding: 10px 15px;
+            border-bottom: 1px solid rgba(0, 255, 204, 0.2);
+            cursor: default;
+        }
+
+        th {
+            text-align: left;
+            padding: 15px;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            font-size: 0.9em;
+            border-bottom: 1px solid rgba(0, 255, 204, 0.2);
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #2d343e;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        tr:not(.cat-row):hover td {
+            background-color: var(--hover-color);
+        }
+
+        .cmd-name {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        .cmd-args {
+            color: #ffcc00;
+            font-style: italic;
+            font-size: 0.85em;
+        }
+
+        #toast {
+            visibility: hidden;
+            min-width: 200px;
+            background-color: var(--accent-color);
+            color: #000;
+            text-align: center;
+            border-radius: 4px;
+            padding: 12px;
+            position: fixed;
+            z-index: 10;
+            bottom: 30px;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.4);
+        }
+
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2s;
+        }
+
+        @media (max-width: 600px) {
+            th:nth-child(3), td:nth-child(3) { display: none; }
+            body { padding: 10px; }
+            h1 { font-size: 1.4em; }
+            td, th { padding: 10px; font-size: 0.85em; }
+        }
+
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>R.E.P.O. Terminal</h1>
+        <div class="hint">Нажмите на любую строку, чтобы скопировать команду</div>
+    </div>
+
+    <div class="container">
+        <table class="command-table">
+            <thead>
+                <tr>
+                    <th>Команда</th>
+                    <th>Действие</th>
+                    <th>Аргументы</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="cat-row"><td colspan="3">Управление персонажем</td></tr>
+                <tr onclick="copyCmd('!прыжок')"><td class="cmd-name">!прыжок</td><td>Прыгнуть вверх</td><td>—</td></tr>
+                <tr onclick="copyCmd('!хоп')"><td class="cmd-name">!хоп</td><td>Прыгнуть вверх</td><td>—</td></tr>
+                <tr onclick="copyCmd('!лети')"><td class="cmd-name">!лети</td><td>Придать ускорение вверх</td><td>[1-50]</td></tr>
+                <tr onclick="copyCmd('!сидеть')"><td class="cmd-name">!сидеть</td><td>Сесть на 10 секунд</td><td>—</td></tr>
+                <tr onclick="copyCmd('!гуськом')"><td class="cmd-name">!гуськом</td><td>Сесть на 10 секунд</td><td>—</td></tr>
+
+                <tr class="cat-row"><td colspan="3">Здоровье и Состояние</td></tr>
+                <tr onclick="copyCmd('!бог')"><td class="cmd-name">!бог</td><td>Бессмертие (5 минут)</td><td>—</td></tr>
+                <tr onclick="copyCmd('!смертный')"><td class="cmd-name">!смертный</td><td>Отключить бессмертие</td><td>—</td></tr>
+                <tr onclick="copyCmd('!атлет')"><td class="cmd-name">!атлет</td><td>Бесконечный бег (5 минут)</td><td>—</td></tr>
+                <tr onclick="copyCmd('!дрыщ')"><td class="cmd-name">!дрыщ</td><td>Вернуть усталость</td><td>—</td></tr>
+                <tr onclick="copyCmd('!хил')"><td class="cmd-name">!хил</td><td>Лечение</td><td>[1-50]</td></tr>
+                <tr onclick="copyCmd('!урон')"><td class="cmd-name">!урон</td><td>Нанести урон</td><td>[1-50]</td></tr>
+
+                <tr class="cat-row"><td colspan="3">Враги</td></tr>
+                <tr onclick="copyCmd('!враг')"><td class="cmd-name">!враг</td><td>Случайный враг из списка</td><td>—</td></tr>
+
+                <tr class="cat-row"><td colspan="3">Враги (Сложность 1)</td></tr>
+                <tr onclick="copyCmd('!пёс')"><td class="cmd-name">!пёс</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!велик')"><td class="cmd-name">!велик</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!пацан')"><td class="cmd-name">!пацан</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!клещ')"><td class="cmd-name">!клещ</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!блевота')"><td class="cmd-name">!блевота</td><td></td><td>—</td></tr>
+
+                <tr class="cat-row"><td colspan="3">Враги (Сложность 2)</td></tr>
+                <tr onclick="copyCmd('!слендер')"><td class="cmd-name">!слендер</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!утка')"><td class="cmd-name">!утка</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!мелкий')"><td class="cmd-name">!мелкий</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!животное')"><td class="cmd-name">!животное</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!таракан')"><td class="cmd-name">!таракан</td><td></td><td>—</td></tr>
+
+                <tr class="cat-row"><td colspan="3">Враги (Сложность 3)</td></tr>
+                <tr onclick="copyCmd('!невидимка')"><td class="cmd-name">!невидимка</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!жаба')"><td class="cmd-name">!жаба</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!мишлен')"><td class="cmd-name">!мишлен</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!пришелец')"><td class="cmd-name">!пришелец</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!рулетка')"><td class="cmd-name">!рулетка</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!цветок')"><td class="cmd-name">!цветок</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!чорт')"><td class="cmd-name">!чорт</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!комар')"><td class="cmd-name">!комар</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!дед')"><td class="cmd-name">!дед</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!бабка')"><td class="cmd-name">!бабка</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!жвачка')"><td class="cmd-name">!жвачка</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!монашка')"><td class="cmd-name">!монашка</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!кукла')"><td class="cmd-name">!кукла</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!клоун')"><td class="cmd-name">!клоун</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!череп')"><td class="cmd-name">!череп</td><td></td><td>—</td></tr>
+                <tr onclick="copyCmd('!демон')"><td class="cmd-name">!демон</td><td></td><td>—</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="toast">Команда скопирована!</div>
+
+    <script>
+        function copyCmd(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const toast = document.getElementById("toast");
+                toast.className = "show";
+                setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 2000);
+            }).catch(err => {
+                console.error('Ошибка копирования: ', err);
+            });
+        }
+    </script>
+</body>
+</html>
