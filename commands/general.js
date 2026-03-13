@@ -71,19 +71,7 @@ module.exports = {
     '!репо': {
         public: true,
         execute: (deps, target, context) => {
-            // Сначала получаем список имен только тех команд, которые НЕ админские и НЕ публичные (справка)
-            const keys = Object.keys(repoCommandsRu).filter(k => {
-                const cmd = repoCommandsRu[k];
-                return !cmd.admin && !cmd.public;
-            });
-
-            if (keys.length === 0) return deps.say(target, context, `@${context.username}, команд пока нет. 🛠️`);
-
-            // Теперь разделяем отфильтрованный список на эффекты и мобов
-            const effects = keys.filter(k => !repoCommandsRu[k].isSpawn).join(' ');
-            const spawns = keys.filter(k => repoCommandsRu[k].isSpawn).join(' ');
-
-            deps.say(target, context, `Команды R.E.P.O.: [Действия]: ${effects} | [Враги]: ${spawns}`);
+            deps.say(target, context, `Команды R.E.P.O. тут: iagann.github.io/iaganBot/commands/repo Нажмите на команду, чтобы скопировать`);
         }
     },
 
