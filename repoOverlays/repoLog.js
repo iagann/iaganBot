@@ -13,8 +13,8 @@ const POLL_INTERVAL = 500; // Опрос игры дважды в секунду
 module.exports = {
     init: function() {
         // Раздаем HTML файл оверлея
-        app.get('/overlay', (req, res) => {
-            res.sendFile(path.join(__dirname, 'overlay.html'));
+        app.get('/repoLog', (req, res) => {
+            res.sendFile(path.join(__dirname, 'repoLog.html'));
         });
 
         // Логика опроса игры
@@ -33,7 +33,7 @@ module.exports = {
         }, POLL_INTERVAL);
 
         io.on('connection', (socket) => {
-            console.log('\x1b[36m%s\x1b[0m', '[REPO] OBS подключился к оверлею');
+            console.log('\x1b[36m%s\x1b[0m', '[REPO] OBS подключился к оверлею c логами');
         });
 
         http.listen(3005, () => {

@@ -1,6 +1,7 @@
 // wrappers.js
 const repoCommandsRu = require('./commands/repo_ru');
 const repoCommandsEn = require('./commands/repo_en');
+const repoCooldownOverlay = require('./repoOverlays/cooldownOverlay');
 
 const cooldowns = new Set();
 const cooldownsRepo = new Set();
@@ -8,20 +9,21 @@ const cooldownsRepo = new Set();
 // Добавили 4-й аргумент commandName
 function commandWrapper(deps, action, context, commandName) {
     const { config } = deps; 
-    const user = context.username;
+    const user = context['display-name'];
 
     // Проверяем, есть ли вызванная команда в списках REPO
     const isRepoCommand = (commandName in repoCommandsRu) || (commandName in repoCommandsEn);
 
-    // 1. Сначала проверяем глобальный кулдаун (для ВСЕХ команд)
-    if (cooldowns.has(user)) {
-        console.log(`[Cooldown] ${user} ждет базового кулдауна...`);
-        return;
-    }
-
     // 2. Затем проверяем специальный REPO-кулдаун (ТОЛЬКО для REPO-команд)
     if (isRepoCommand && cooldownsRepo.has(user)) {
         console.log(`[Cooldown] ${user} ждет REPO-кулдауна...`);
+        repoCooldownOverlay.emit('cooldownDenied', { user, command: commandName });
+        return;
+    }
+
+        // 1. Сначала проверяем глобальный кулдаун (для ВСЕХ команд)
+    if (cooldowns.has(user)) {
+        console.log(`[Cooldown] ${user} ждет базового кулдауна...`);
         return;
     }
 
@@ -35,6 +37,11 @@ function commandWrapper(deps, action, context, commandName) {
         // Если команда из REPO, дополнительно вешаем долгий кулдаун
         if (isRepoCommand) {
             cooldownsRepo.add(user);
+            repoCooldownOverlay.emit('cooldownStart', { 
+                user, 
+                command: commandName, 
+                duration: config.cooldownTimeRepo || 30000 
+            });
             setTimeout(() => cooldownsRepo.delete(user), config.cooldownTimeRepo || 30000);
         }
     }

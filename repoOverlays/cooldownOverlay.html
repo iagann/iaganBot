@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>REPO Cooldowns</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+        body { 
+            margin: 0; padding: 0; background: transparent; 
+            overflow: hidden; font-family: 'Consolas', monospace; 
+            height: 100vh; width: 100vw;
+            display: flex; flex-direction: column; 
+            justify-content: flex-end; 
+            align-items: flex-end;    
+        }
+
+        #cd-container { 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-end; 
+            gap: 15px; 
+        }
+
+        /* ОБОЛОЧКА: отвечает за время жизни и движение всей конструкции */
+        .cd-wrapper {
+            animation: lifeCycle forwards cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform, opacity;
+        }
+
+        /* КОНТЕНТ: отвечает за фон, тряску и оформление */
+        .cd-item { 
+            background: rgba(0, 0, 0, 0.9); 
+            border-radius: 4px; 
+            border-right: 8px solid #00ffcc; 
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px; 
+            width: fit-content;
+            transition: background-color 0.4s ease, border-color 0.4s ease;
+        }
+
+        .user-info {
+            text-align: right;
+            line-height: 1.1;
+        }
+
+        .user-name {
+            font-size: 32px;
+            font-weight: bold;
+            display: block;
+            color: #00ffcc;
+            text-shadow: 2px 2px 4px #000;
+        }
+
+        .cmd-name {
+            font-size: 22px;
+            opacity: 0.9;
+            color: #00ffcc;
+        }
+
+        .timer-svg {
+            width: 50px;
+            height: 50px;
+            transform: rotate(-90deg);
+            flex-shrink: 0;
+        }
+
+        .timer-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 5;
+        }
+
+        .timer-progress {
+            fill: none;
+            stroke: #00ffcc;
+            stroke-width: 5;
+            stroke-dasharray: 126; 
+            stroke-dashoffset: 0;
+        }
+
+        /* КРАСНЫЙ РЕЖИМ (тряска и фон) */
+        .denied {
+            background-color: rgba(180, 0, 0, 0.95) !important;
+            border-right-color: #ff4444 !important;
+            /* Тряска теперь не конфликтует с lifeCycle */
+            animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes lifeCycle {
+            0% { opacity: 0; transform: translateX(30px); }
+            5% { opacity: 1; transform: translateX(0); }
+            95% { opacity: 1; transform: translateX(0); }
+            100% { opacity: 0; transform: translateX(30px); }
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+    </style>
+</head>
+<body>
+    <div id="cd-container"></div>
+
+    <script>
+        const socket = io("http://localhost:3006");
+        const container = document.getElementById('cd-container');
+
+        socket.on('cooldownStart', (data) => {
+            const id = `cd-${data.user}`;
+            const existing = document.getElementById(id);
+            if (existing) existing.remove();
+
+            const duration = data.duration || 30000;
+
+            // Создаем обертку для анимации жизни
+            const wrapper = document.createElement('div');
+            wrapper.id = id;
+            wrapper.className = 'cd-wrapper';
+            wrapper.style.animationDuration = duration + 'ms';
+
+            // Создаем сам элемент с контентом
+            const item = document.createElement('div');
+            item.className = 'cd-item';
+            
+            item.innerHTML = `
+                <div class="user-info">
+                    <span class="user-name">${data.user}</span>
+                    <span class="cmd-name">${data.command}</span>
+                </div>
+                <svg class="timer-svg">
+                    <circle class="timer-bg" cx="25" cy="25" r="20"></circle>
+                    <circle class="timer-progress" cx="25" cy="25" r="20" id="prog-${data.user}"></circle>
+                </svg>
+            `;
+
+            wrapper.appendChild(item);
+            container.appendChild(wrapper);
+
+            const circle = document.getElementById(`prog-${data.user}`);
+            circle.style.transition = `stroke-dashoffset ${duration}ms linear`;
+            
+            setTimeout(() => {
+                circle.style.strokeDashoffset = '126'; 
+            }, 50);
+
+            // Удаление
+            setTimeout(() => {
+                if (wrapper) wrapper.remove();
+            }, duration + 100);
+        });
+
+        socket.on('cooldownDenied', (data) => {
+            const wrapper = document.getElementById(`cd-${data.user}`);
+            if (wrapper) {
+                const item = wrapper.querySelector('.cd-item');
+                if (item) {
+                    item.classList.remove('denied');
+                    void item.offsetWidth; // Магия перезапуска
+                    item.classList.add('denied');
+                    
+                    // Убираем красный фон через 800мс
+                    setTimeout(() => {
+                        item.classList.remove('denied');
+                    }, 800);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
