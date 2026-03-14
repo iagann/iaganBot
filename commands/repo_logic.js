@@ -55,15 +55,32 @@ const core = {
             sendToGame('msg', msg);
         });
     },
-    spawn: (deps, target, context, locale, enemyId, actionName, emoji) => {
+    spawn: (deps, target, context, locale, enemyId, actionName, emoji, args, maxCount) => {
         runAction(deps, actionName, () => {
+            // Извлекаем количество: берем первый аргумент, превращаем в число
+            // Если аргументов нет или это не число — по дефолту 1
+            let count = 1;
+            if (args && args.length > 0) {
+                const parsed = parseInt(args[0]);
+                if (!isNaN(parsed)) count = parsed;
+            }
+
+            // Ограничиваем количество на стороне бота (например, максимум 5 для чата)
+            count = Math.min(Math.max(count, 1), maxCount);
+
             const msg = lang[locale].spawn[actionName](context.username);
-            deps.say(target, context, `@${msg} ${emoji}`);
-            sendToGame('spawn', enemyId);
+            
+            // Добавляем инфо о количестве в чат, если их больше одного
+            const countText = count > 1 ? ` (x${count})` : "";
+            deps.say(target, context, `@${msg} ${emoji}${countText}`);
+
+            // Шлем в игру в новом формате: spawn/ID/Count
+            sendToGame('spawn', `${enemyId}/${count}`);
+
             if (enemyId === 'Enemy - Hunter' || enemyId === 'Enemy - Runner') {
-                sendToGame('alert', msg);
+                sendToGame('alert', `${msg}${countText}`);
             } else {
-                sendToGame('msg', msg);
+                sendToGame('msg', `${msg}${countText}`);
             }
         });
     },
