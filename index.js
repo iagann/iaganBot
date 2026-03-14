@@ -7,7 +7,7 @@ let { initTerminal } = require('./terminal');
 //let chat = require('./commands/chat');
 const repoLogOverlay = require('./repoOverlays/repoLog');
 const repoСooldownOverlay = require('./repoOverlays/cooldownOverlay');
-
+const repoDeathOverlay = require('./repoOverlays/deathOverlay');
 
 // Инициализируем команды
 let commands = loadCommands();
@@ -116,6 +116,7 @@ if (config.repoEnabled) {
     console.log("[SYSTEM] Мод REPO включен в конфиге. Запускаю мониторинг логов...");
     repoLogOverlay.init();
     repoСooldownOverlay.init();
+    repoDeathOverlay.init();
 } else {
     console.log("[SYSTEM] Мод REPO выключен.");
 }
