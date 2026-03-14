@@ -24,6 +24,14 @@ const core = {
             sendToGame('msg', msg);
         });
     },
+    jumps: (deps, target, context, locale) => {
+        runAction(deps, "Jumps", () => {
+            const msg = lang[locale].jumps(context.username);
+            deps.say(target, context, `@${msg} ⏫`);
+            sendToGame('jumps');
+            sendToGame('msg', msg);
+        });
+    },
     pushUp: (deps, target, context, locale, args) => {
         runAction(deps, "PushUp", () => {
             let power = parseInt(args[0]);

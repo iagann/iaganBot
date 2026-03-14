@@ -4,6 +4,7 @@ module.exports = {
     // --- ОБЩИЕ КОМАНДЫ ---
     '!прыжок': { execute: (d, t, c) => core.jump(d, t, c, 'ru') },
     '!хоп':    { execute: (d, t, c) => core.jump(d, t, c, 'ru') },
+    '!прыгать': { execute: (d, t, c) => core.jumps(d, t, c, 'ru') },
     '!лети': { execute: (d, t, c, a) => core.pushUp(d, t, c, 'ru', a) },
     '!сидеть': { execute: (d, t, c) => core.crouch(d, t, c, 'ru') },
     '!гуськом':{ execute: (d, t, c) => core.crouch(d, t, c, 'ru') },
