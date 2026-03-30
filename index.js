@@ -42,8 +42,9 @@ const deps = {
         const myName = myChannel.replace('#', '');
         const isMyChannel = target.toLowerCase() === myChannel;
         const isSentByMe = context && context.username.toLowerCase() === myName;
+        const isSentByTekken = context && context.username.toLowerCase() === "tekkenking64";
         
-        if (isMyChannel || isSentByMe) {
+        if (isMyChannel || isSentByMe || isSentByTekken) {
             // Добавляем .catch() для обработки дисконнекта
             client.say(target, message).catch(err => {
                 console.error(`[Twitch Error] Не удалось отправить сообщение: ${err}`);
