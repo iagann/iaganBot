@@ -1,6 +1,21 @@
 const repoCommandsRu = require('./repo_ru');
 const repoCommandsEn = require('./repo_en');
 
+const frogsCommand = {
+    public: true,
+    execute: (deps, target, context) => {
+        deps.say(target, context, `билд на жаб на максролле: maxroll.gg/last-epoch/build-guides/anurok-frogs-beastmaster-guide`);
+    }
+};
+
+const coinCommand = {
+    public: true,
+    execute: (deps, target, context) => {
+        const result = Math.random() < 0.5 ? 'Орел' : 'Решка';
+        deps.say(target, context, `@${context.username}, выпало: ${result}!`);
+    }
+};
+
 module.exports = {
     '!reload': { 
         admin: true,
@@ -15,11 +30,12 @@ module.exports = {
         }
     },
 
-    '!привет': { 
+    '!ботик': { 
         public: true,
+        admin: true,
         execute: (deps, target, context) => {
             const { client } = deps;
-            deps.say(target, context, `Привет, @${context.username}! Я тебя слышу.`);
+            deps.say(target, context, `я здесь, мой создатель @${context.username}! UwU`);
         }
     },
 
@@ -31,16 +47,14 @@ module.exports = {
         }
     },
 
-    '!монетка': {
-        public: true,
-        execute: (deps, target, context) => {
-            // Генерируем случайное число: 0 или 1
-            const result = Math.random() < 0.5 ? 'Орел' : 'Решка';
-            
-            // Отправляем результат в чат
-            deps.say(target, context, `@${context.username}, выпало: ${result}!`);
-        }
-    },
+    // Жабы
+    '!жабы': frogsCommand,
+    '!билд': frogsCommand,
+    '!максролл': frogsCommand,
+
+    // Монетка
+    '!монетка': coinCommand,
+    '!монета': coinCommand,
 
     '!команды': { 
         execute: (deps, target, context) => {
