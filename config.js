@@ -5,5 +5,5 @@ module.exports = {
     cooldownTime: 10000,
     cooldownTimeRepo: 30000,
 
-    repoEnabled: true
+    repoEnabled: false
 };
