@@ -1,6 +1,10 @@
 const repoCommandsRu = require('./repo_ru');
 const repoCommandsEn = require('./repo_en');
 
+let isSleepMode = false;
+let sleepInterval = null;
+const SLEEP_INTERVAL_MS = 60 * 1000;
+
 const frogsCommand = {
     public: true,
     execute: (deps, target, context) => {
@@ -34,6 +38,34 @@ const isValidYouTubeUrl = (urlStr) => {
         return false;
     }
 };
+
+async function startSleepInterval(deps, channels) {
+    if (sleepInterval) clearInterval(sleepInterval);
+
+    sleepInterval = setInterval(async () => {
+        if (!isSleepMode) return;
+
+        for (const channel of channels) {
+            // Убираем решетку из названия канала для API
+            const cleanChannel = channel.replace('#', ''); 
+            
+            try {
+                // Обращаемся к открытому API для проверки аптайма
+                const response = await fetch(`https://decapi.me/twitch/uptime/${cleanChannel}`);
+                const text = await response.text();
+
+                // Если стрим оффлайн, API возвращает "Channel is not live" или "offline"
+                // Если стрим идет, возвращается время (например "1 hour, 20 mins")
+                if (!text.includes("offline") && !text.includes("not live") && !text.includes("User not found")) {
+                    deps.say(channel, "мой хозяин сладко спит");
+                    console.log(`[Сон] Отправлено сообщение на канал ${cleanChannel}`);
+                }
+            } catch (err) {
+                console.error(`[Сон] Ошибка при проверке статуса ${cleanChannel}:`, err.message);
+            }
+        }
+    }, SLEEP_INTERVAL_MS);
+}
 
 module.exports = {
     '!reload': { 
@@ -88,7 +120,7 @@ const protocols = [
                 "когнитивный диссонанс", "попытка дестабилизации эфира",
                 "несанкционированный проблеск интеллекта", "критический избыток самомнения",
                 "нарушение законов термодинамики в споре", "нецелевое расходование внимания",
-                "акустический терроризм", "симуляцию полезной деятельности",
+                "акустический терроризм", "симуляция полезной деятельности",
                 "ересь здравого смысла", "токсичный оптимизм", "превышение лимита на глупость"
             ];
             
@@ -118,6 +150,10 @@ const protocols = [
     '!жабы': frogsCommand,
     '!билд': frogsCommand,
     '!максролл': frogsCommand,
+    '!maxroll': frogsCommand,
+    '!build': frogsCommand,
+    '!frogs': frogsCommand,
+    '!anurok': frogsCommand,
 
     // Монетка
     '!монетка': coinCommand,
@@ -185,7 +221,7 @@ const protocols = [
 
     '!трек': {
         execute: async (deps, target, context, args) => {
-            const allowedUsers = ["iagan3228", "iaganBot", "mordukk", "TekkenKing64", "Doggy_DOX", "whisper_me_ahri_rule_34", "roma_live1", "yanva___"];
+            const allowedUsers = ["iagan3228", "iaganBot", "mordukk", "TekkenKing64", "Doggy_DOX", "whisper_me_ahri_rule_34", "roma_live1", "yanva___", "Flanex"];
             const username = context['display-name'];
             if (!username || !allowedUsers.includes(username)) {
                 console.log(`[API] Отклонено: Недоверие к пользователю ${username}`);
@@ -259,5 +295,40 @@ const protocols = [
                 console.error('[Critical] Не удалось связаться со Streamer.bot:', error.message);
             }
         },
-    }
+    },
+
+    '!вайфу': {
+        public: true,
+        execute: (deps, target, context) => {
+            deps.say(target, context, `определение - https://wikireality.ru/wiki/%D0%92%D0%B0%D0%B9%D1%84%D1%83, тест - https://pikuco.ru/stats/168353/`);
+        }
+    },
+
+    '!sleep': {
+        admin: true,
+        public: true,
+        execute: (deps, target, context) => {
+            if (isSleepMode) {
+                console.log("Режим сна уже активирован.");
+                return;
+            }
+            
+            isSleepMode = true;
+            console.log("Режим сна активирован. Начинаю патрулировать онлайн-каналы.");
+            
+            startSleepInterval(client, opts.channels);
+        }
+    },
+    '!unsleep': {
+        admin: true,
+        public: true,
+        execute: (deps, target, context) => {
+            sSleepMode = false;
+            if (sleepInterval) {
+                clearInterval(sleepInterval);
+                sleepInterval = null;
+            }
+            console.log(deps, "Режим сна отключен. Доброе утро, хозяин.");
+        }
+    },
 }
