@@ -12,4 +12,4 @@ const opts = {
 
 const client = new tmi.client(opts);
 
-module.exports = { client };
+module.exports = { client, opts };

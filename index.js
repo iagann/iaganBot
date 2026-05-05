@@ -32,7 +32,7 @@ const deps = {
     reloadAll,
     getCommands: () => commands,
     // Создаем безопасную функцию отправки сообщений
-    say: (target, context, message) => {
+    say: async (target, context, message) => {
         console.log(`Отвечаю: ${message}`);
 
         if (config.replyEnabled === false)
@@ -46,10 +46,25 @@ const deps = {
         const isSentByAnyone = true;
         
         if (isMyChannel || isSentByMe || isSentByTekken || isSentByAnyone) {
-            // Добавляем .catch() для обработки дисконнекта
-            client.say(target, message).catch(err => {
-                console.error(`[Twitch Error] Не удалось отправить сообщение: ${err}`);
-            });
+            const maxAttempts = 5;
+            for (let i = 1; i <= maxAttempts; i++) {
+                try {
+                    // Пытаемся отправить сообщение через tmi.js
+                    await client.say(target, message);
+                    return; // Успех, выходим из цикла
+                } catch (err) {
+                   const time = new Date().toLocaleTimeString();
+                    console.error(`[${time}] [Retry ${i}/${maxAttempts}] Ошибка в ${target}: ${err}`);
+                    
+                    if (i === maxAttempts) {
+                        console.error(`[Twitch Error] Финальный сбой после 5 попыток в ${target}`);
+                        return;
+                    }
+
+                    // Пауза перед следующей попыткой (1с, 2с, 3с...) для эффективности
+                    await new Promise(res => setTimeout(res, 1000 * i));
+                }
+            }
         } else {
             console.log(`[Shield] Игнорирую ответ для ${context?.username} в чужом чате ${target}`);
         }

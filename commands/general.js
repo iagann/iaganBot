@@ -1,9 +1,10 @@
 const repoCommandsRu = require('./repo_ru');
 const repoCommandsEn = require('./repo_en');
+const { opts } = require('../connection');
 
 let isSleepMode = false;
 let sleepInterval = null;
-const SLEEP_INTERVAL_MS = 60 * 1000;
+const SLEEP_INTERVAL_MS = 60 * 60 * 1000;
 
 const frogsCommand = {
     public: true,
@@ -39,32 +40,36 @@ const isValidYouTubeUrl = (urlStr) => {
     }
 };
 
-async function startSleepInterval(deps, channels) {
+async function startSleepInterval(deps, context, channels) {
     if (sleepInterval) clearInterval(sleepInterval);
 
-    sleepInterval = setInterval(async () => {
+    // Выносим логику в отдельную внутреннюю функцию для повторного использования
+    const performCheck = async () => {
         if (!isSleepMode) return;
 
         for (const channel of channels) {
-            // Убираем решетку из названия канала для API
-            const cleanChannel = channel.replace('#', ''); 
+            const cleanChannel = channel.replace('#', '');
             
             try {
-                // Обращаемся к открытому API для проверки аптайма
                 const response = await fetch(`https://decapi.me/twitch/uptime/${cleanChannel}`);
                 const text = await response.text();
 
-                // Если стрим оффлайн, API возвращает "Channel is not live" или "offline"
-                // Если стрим идет, возвращается время (например "1 hour, 20 mins")
+                // Проверка статуса стрима
                 if (!text.includes("offline") && !text.includes("not live") && !text.includes("User not found")) {
-                    deps.say(channel, "мой хозяин сладко спит");
-                    console.log(`[Сон] Отправлено сообщение на канал ${cleanChannel}`);
+                    deps.say(channel, context, "мой хозяин сладко спит");
+                    console.log(`[${getTime()}] [OK] ${cleanChannel}: Стрим онлайн, сообщение отправлено.`);
                 }
             } catch (err) {
-                console.error(`[Сон] Ошибка при проверке статуса ${cleanChannel}:`, err.message);
+                console.error(`[${getTime()}] [ERROR] ${cleanChannel}: Ошибка API - ${err.message}`);
             }
         }
-    }, SLEEP_INTERVAL_MS);
+    };
+
+    // 1. Запускаем проверку немедленно
+    performCheck();
+
+    // 2. Устанавливаем регулярный цикл
+    sleepInterval = setInterval(performCheck, SLEEP_INTERVAL_MS);
 }
 
 module.exports = {
@@ -316,19 +321,21 @@ const protocols = [
             isSleepMode = true;
             console.log("Режим сна активирован. Начинаю патрулировать онлайн-каналы.");
             
-            startSleepInterval(client, opts.channels);
+            const channels = opts.channels || [];
+            startSleepInterval(deps, context, channels);
         }
     },
     '!unsleep': {
         admin: true,
         public: true,
         execute: (deps, target, context) => {
-            sSleepMode = false;
+            isSleepMode = false;
             if (sleepInterval) {
                 clearInterval(sleepInterval);
                 sleepInterval = null;
             }
-            console.log(deps, "Режим сна отключен. Доброе утро, хозяин.");
+            console.log("Режим сна отключен. Доброе утро, хозяин.");
+            deps.say(target, context, "Режим сна отключен. Доброе утро, хозяин.");
         }
     },
 }
