@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>NERV Sync Interface Narrow + CRT</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+        :root {
+            --eva-orange: #f58220;
+            --eva-red: #ff0000;
+            --eva-blue: #00d2ff;
+            --eva-yellow: #ffff00;
+            --eva-purple: #a061d1;
+            --eva-green: #00ff41;
+            --current-color: var(--eva-orange);
+            --bg-alpha: rgba(0, 0, 0, 0.85);
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background: transparent;
+            overflow: hidden;
+            font-family: 'Consolas', 'Courier New', monospace;
+            color: var(--current-color);
+            transition: color 0.5s ease;
+            height: 100vh; width: 100vw;
+        }
+
+        #hud-root {
+            position: absolute;
+            bottom: 80px;
+            left: 80px;
+            width: 450px;
+            display: flex;
+            flex-direction: column;
+            will-change: transform;
+        }
+
+        /* --- ЭФФЕКТ СКАНЛАЙНОВ (CRT) --- */
+        #hud-root::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            /* Горизонтальные полоски + легкий шум */
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0.8;
+        }
+
+        .header {
+            background: var(--current-color);
+            color: black;
+            font-weight: bold;
+            padding: 8px 30px 8px 15px;
+            font-size: 22px;
+            width: fit-content;
+            clip-path: polygon(0 0, 100% 0, 92% 100%, 0 100%);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: background-color 0.5s ease;
+            white-space: nowrap;
+        }
+
+        .sync-panel-container {
+            position: relative;
+            margin-top: -2px;
+            width: 100%;
+        }
+
+        .panel-svg {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1;
+        }
+
+        .panel-shape {
+            fill: var(--bg-alpha);
+            stroke: var(--current-color);
+            stroke-width: 4;
+            vector-effect: non-scaling-stroke;
+            transition: stroke 0.5s ease;
+        }
+
+        .content-area {
+            padding: 25px;
+            box-sizing: border-box;
+        }
+
+        .label { 
+            font-size: 16px; 
+            font-weight: bold;
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,1);
+        }
+
+        .status-text { 
+            font-size: 54px; 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            margin-bottom: 18px;
+            letter-spacing: 2px;
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.8);
+            line-height: 0.9;
+        }
+        
+        .sync-bar-outer {
+            height: 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--current-color);
+            margin-bottom: 20px;
+            transition: border-color 0.5s ease;
+        }
+
+        #sync-progress {
+            height: 100%; width: 0%;
+            background: var(--current-color);
+            transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.5s ease;
+            box-shadow: 0 0 20px var(--current-color);
+        }
+
+        .breakdown-container {
+            border-top: 2px dashed var(--current-color);
+            padding-top: 15px;
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px;
+            transition: border-color 0.5s ease;
+        }
+
+        .emotion-row { 
+            display: flex; 
+            align-items: center; 
+            font-size: 18px; 
+            gap: 12px;
+            opacity: 1;
+            transition: opacity 0.4s ease, order 0.5s ease;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+        }
+
+        .emotion-row.active { 
+            opacity: 1; 
+            font-weight: bold; 
+            filter: drop-shadow(0 0 3px var(--current-color));
+        }
+
+        .em-name { width: 110px; text-transform: uppercase; overflow: hidden; }
+        .em-bar-bg { flex-grow: 1; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; overflow: hidden; }
+        .em-bar-fill { height: 100%; background: var(--current-color); transition: width 0.8s ease; }
+        
+        .em-val { 
+            width: 60px;
+            text-align: right; 
+            font-size: 16px;
+        }
+
+        /* --- СИСТЕМНЫЕ ЛОГИ (HEX) --- */
+        .system-log {
+            font-size: 10px;
+            opacity: 1;
+            margin-top: 10px;
+            letter-spacing: 1px;
+            height: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .details {
+            display: flex; 
+            justify-content: space-between; 
+            margin-top: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            border-top: 2px solid color-mix(in srgb, var(--current-color), transparent 50%);
+            padding-top: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,1);
+        }
+        
+        .critical { animation: alert-flash 0.5s infinite alternate; }
+        @keyframes alert-flash { from { filter: brightness(1); } to { filter: brightness(1.3); } }
+
+        .glitch { animation: glitch-anim 0.15s infinite linear; will-change: transform; }
+        @keyframes glitch-anim {
+            0% { transform: translate(0); }
+            25% { transform: translate(-1px, 1px); }
+            50% { transform: translate(1px, -1px); }
+            75% { transform: translate(-1px, -1px); }
+            100% { transform: translate(0); }
+        }
+
+        .lost-link {
+            --current-color: #ececec !important; 
+            text-shadow: 0 0 10px rgba(255,255,255,0.3), 2px 2px 4px rgba(0,0,0,1) !important;
+            animation: subtle-lost-pulse 1s ease-in-out infinite alternate !important;
+        }
+
+        .lost-link .header { background: var(--current-color) !important; color: #000 !important; }
+        .lost-link .panel-shape { stroke: var(--current-color) !important; }
+
+        @keyframes subtle-lost-pulse {
+            0% { opacity: 0.8; filter: brightness(0.9); }
+            100% { opacity: 1; filter: brightness(1.1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="hud-root">
+        <div class="header" id="sys-label">Neural Link: Active</div>
+        
+        <div class="sync-panel-container" id="main-panel">
+            <svg class="panel-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <polygon class="panel-shape" points="0.5,0.5 99.5,0.5 99.5,90 92,99.5 0.5,99.5" />
+            </svg>
+
+            <div class="content-area">
+                <div class="label">COGNITIVE STATUS:</div>
+                <div class="status-text" id="emotion-name">STANDBY</div>
+                
+                <div class="label">SYNCHRONIZATION RATE:</div>
+                <div class="sync-bar-outer">
+                    <div id="sync-progress"></div>
+                </div>
+                
+                <div id="breakdown" class="breakdown-container"></div>
+                
+                <!-- <div class="system-log" id="system-log">0x0000 ADDR:0x0000 STATUS:READY</div> -->
+
+                <div class="details">
+                    <div id="sync-percent">0.00%</div>
+                    <div id="condition">PATTERN: BLUE</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function getMixedColor(scores, confidence) {
+            const palette = {
+                'ANGRY':    { h: 0,   s: 100, l: 50 },
+                'SAD':      { h: 275, s: 100, l: 60 },
+                'POSITIVE': { h: 140, s: 100, l: 50 },
+                'OTHER':    { h: 60,  s: 100, l: 50 },
+                'NEUTRAL':  { h: 28,  s: 91,  l: 54 }
+            };
+
+            let safeConf = (typeof confidence === 'number' && !isNaN(confidence)) ? confidence : 0;
+            let sinSum = 0; let cosSum = 0; let totalWeight = 0;
+            const entries = Object.entries(scores || {});
+            
+            if (entries.length === 0 || (safeConf < 0.05 && !entries.some(e => e[1] > 0.1))) {
+                const base = palette['NEUTRAL'];
+                return `hsl(${base.h}, ${Math.round(base.s * 0.5)}%, ${base.l}%)`;
+            }
+
+            for (const [name, score] of entries) {
+                const color = palette[name.toUpperCase()] || palette['NEUTRAL'];
+                const weight = score || 0;
+                const rad = (color.h * Math.PI) / 180;
+                sinSum += Math.sin(rad) * weight;
+                cosSum += Math.cos(rad) * weight;
+                totalWeight += weight;
+            }
+
+            if (totalWeight <= 0) return `hsl(28, 91%, 54%)`;
+
+            let avgHue = (Math.atan2(sinSum, cosSum) * 180) / Math.PI;
+            if (avgHue < 0) avgHue += 360;
+
+            const COLOR_THRESHOLD = 0.3;
+            const saturationMultiplier = Math.max(COLOR_THRESHOLD, safeConf);
+            let targetS = 100;
+            if (totalWeight > 0) {
+                const orangeWeight = (scores['neutral'] || 0) / totalWeight;
+                targetS = 100 - (9 * orangeWeight); 
+            }
+
+            const finalS = Math.round(targetS * saturationMultiplier);
+            const lightnessGain = (Math.max(0, safeConf - COLOR_THRESHOLD) / (1 - COLOR_THRESHOLD)) * 5;
+            const finalL = 50 + lightnessGain;
+
+            return `hsl(${Math.round(avgHue)}, ${finalS}%, ${Math.round(finalL)}%)`;
+        }
+
+        const socket = io("http://localhost:3011");
+        const root = document.documentElement;
+        const hudRoot = document.getElementById('hud-root');
+        const sysLabel = document.getElementById('sys-label');
+        const emotionName = document.getElementById('emotion-name');
+        const syncProgress = document.getElementById('sync-progress');
+        const syncPercent = document.getElementById('sync-percent');
+        const condition = document.getElementById('condition');
+        const breakdownContainer = document.getElementById('breakdown');
+        const logEl = document.getElementById('system-log');
+
+        const emotionElements = {};
+        let isAiConnected = true;
+        let currentConfidence = 0;
+        let currentScores = {};
+
+        // --- ГЕНЕРАТОР HEX ЛОГОВ ---
+        function updateHexLog() {
+            const hex = () => Math.floor(Math.random() * 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+            const states = ["ACTIVE", "STABLE", "SYNC_OK", "PROCESSING", "NEURAL_LINK", "FLOW"];
+            const state = currentConfidence > 0.7 ? "OVERDRIVE" : states[Math.floor(Math.random() * states.length)];
+            logEl.innerText = `0x${hex()} ADDR:0x${hex()} STATUS:${state}`;
+        }
+
+        function updateVisuals(scores, topEm) {
+            if (!scores) return;
+            const sortedNames = Object.entries(scores).sort((a, b) => b[1] - a[1]).map(e => e[0]);
+
+            Object.entries(scores).forEach(([name, val]) => {
+                const percent = (val * 100).toFixed(1);
+                if (!emotionElements[name]) {
+                    const row = document.createElement('div');
+                    row.className = 'emotion-row';
+                    row.innerHTML = `<div class="em-name">${name}</div><div class="em-bar-bg"><div class="em-bar-fill" style="width: 0%"></div></div><div class="em-val">0%</div>`;
+                    breakdownContainer.appendChild(row);
+                    emotionElements[name] = { row, fill: row.querySelector('.em-bar-fill'), val: row.querySelector('.em-val') };
+                }
+                const el = emotionElements[name];
+                el.fill.style.width = percent + '%';
+                el.val.innerText = percent + '%';
+                const isNowActive = name.toUpperCase() === topEm && val > 0.05;
+                el.row.className = `emotion-row ${isNowActive ? 'active' : ''}`;
+                el.row.style.order = sortedNames.indexOf(name);
+            });
+        }
+
+        socket.on('emotionUpdate', (data) => {
+            if (!data || !data.top_emotion || !isAiConnected) return;
+            const topEm = data.top_emotion.toUpperCase();
+            if (topEm === 'OTHER') return;
+
+            currentConfidence = data.confidence;
+            currentScores = { ...data.scores }; 
+            hudRoot.classList.remove('critical', 'glitch');
+
+            const mixedColor = getMixedColor(currentScores, currentConfidence);
+            root.style.setProperty('--current-color', mixedColor);
+
+            if (topEm === 'ANGRY') {
+                hudRoot.classList.add('critical');
+                condition.innerText = 'PATTERN: BLOOD';
+                sysLabel.innerText = "Neural Link: Warning";
+            } 
+            else if (topEm === 'SAD') {
+                condition.innerText = 'PATTERN: PURPLE';
+                sysLabel.innerText = "Neural Link: Low Sync";
+            } 
+            else if (topEm === 'POSITIVE') {
+                condition.innerText = 'PATTERN: GREEN';
+                sysLabel.innerText = "Neural Link: Overdrive";
+            } 
+            else {
+                condition.innerText = 'PATTERN: BLUE';
+                sysLabel.innerText = "Neural Link: Active";
+            }
+
+            emotionName.innerText = topEm;
+            const confidencePercent = (currentConfidence * 100).toFixed(2);
+            syncProgress.style.width = confidencePercent + '%';
+            syncPercent.innerText = confidencePercent + '%';
+
+            updateVisuals(currentScores, topEm);
+            updateHexLog(); // Обновляем лог при получении данных
+        });
+
+        socket.on('aiStatus', (status) => {
+            isAiConnected = status.connected;
+            if (isAiConnected) {
+                hudRoot.classList.remove('lost-link');
+                sysLabel.innerText = "Neural Link: Active";
+            } else {
+                hudRoot.classList.add('lost-link');
+                sysLabel.innerText = "NEURO-LINK DISCONNECTED";
+                emotionName.innerText = "OFFLINE";
+                condition.innerText = "SIGNAL LOST";
+                syncProgress.style.width = "0%";
+                syncPercent.innerText = "0.00%";
+                root.style.setProperty('--current-color', '#ececec');
+            }
+        });
+
+        setInterval(() => {
+            if (!isAiConnected || currentConfidence <= 0) return;
+            const decayFactor = 0.995; 
+            currentConfidence *= decayFactor;
+            if (currentConfidence < 0.01) currentConfidence = 0;
+
+            const displayConf = (currentConfidence * 100).toFixed(2);
+            syncProgress.style.width = displayConf + '%';
+            syncPercent.innerText = displayConf + '%';
+
+            for (let name in currentScores) {
+                currentScores[name] *= decayFactor;
+                if (currentScores[name] < 0) currentScores[name] = 0;
+            }
+
+            const currentMixedColor = getMixedColor(currentScores, currentConfidence);
+            root.style.setProperty('--current-color', currentMixedColor);
+
+            if (currentConfidence < 0.05 && emotionName.innerText !== "STANDBY") {
+                emotionName.innerText = "STANDBY";
+                condition.innerText = "PATTERN: BLUE";
+                sysLabel.innerText = "Neural Link: Active";
+                hudRoot.classList.remove('critical', 'glitch');
+            }
+
+            updateVisuals(currentScores, emotionName.innerText);
+            
+            // Рандомное обновление лога в цикле затухания
+            if (Math.random() > 0.8) updateHexLog();
+        }, 100); 
+    </script>
+</body>
+</html>

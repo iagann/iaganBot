@@ -8,6 +8,7 @@ let { initTerminal } = require('./terminal');
 const repoLogOverlay = require('./repoOverlays/repoLog');
 const repoСooldownOverlay = require('./repoOverlays/cooldownOverlay');
 const repoDeathOverlay = require('./repoOverlays/deathOverlay');
+require('./neuroSync/neuroSync');
 
 // Инициализируем команды
 let commands = loadCommands();
