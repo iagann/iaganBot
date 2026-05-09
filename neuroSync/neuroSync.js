@@ -47,14 +47,21 @@ function connectToPython() {
     });
     
     ws.on('close', () => {
-        console.log('[Neuro-Sync] Соединение с ИИ закрыто. Переподключение...');
-        setTimeout(connectToPython, 3000);
+        // Переподключаемся ТОЛЬКО если это не была ручная остановка
+        if (!isManualStop) {
+            console.log('[Neuro-Sync] Соединение с ИИ закрыто. Переподключение...');
+            setTimeout(connectToPython, 3000);
+        } else {
+            console.log('[Neuro-Sync] Соединение закрыто. Режим ожидания команды !neurolink');
+        }
     });
 }
 
 function startRecording() {
     // Если запись уже идет, ничего не делаем
     if (ffmpegProcess) return;
+
+    connectToPython();
 
     isManualStop = false;
     console.log('--- [Neuro-Sync] Запуск прослушивания... ---');
@@ -121,6 +128,9 @@ function stopRecording() {
 
     // Сообщаем оверлею, чтобы он "ушел в серый"
     neuroOverlay.emit('aiStatus', { connected: false });
+
+    console.log('--- [Neuro-Sync] Система полностью отключена ---');
+    neuroOverlay.emit('aiStatus', { connected: false });
 }
 
 function sendAudioToPython() {
@@ -142,6 +152,6 @@ function sendAudioToPython() {
 module.exports = { startRecording, stopRecording };
 
 // Запуск
-connectToPython();
+//connectToPython();
 // Даем время сокету и запускаем по умолчанию
 //setTimeout(startRecording, 1000);
