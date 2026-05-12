@@ -110,11 +110,14 @@ const endings = [
     "и вы бы так могли, но нет.", "продолжение следует...", 
     "биос обновляется.", "не ломайте ему цикл сна.", 
     "иначе будет плохой mood на завтра.", "в отпуске от реальности.", 
-    "Press Any Key", "сеанс окончен.", "конец оповещения.", "бормоча: не буди во мне зверя"
+    "Press Any Key", "сеанс окончен.", "конец оповещения.", "бормоча: не буди во мне зверя",
+    "боже, благослови мозг этого примата",
+    "сасагео, сасагео, шинзо о сасагео"
 ];
 
+const getRand = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
 async function startSleepInterval(deps, context, channels) {
-    const getRand = (arr) => arr[Math.floor(Math.random() * arr.length)];
     const message = `мой ${getRand(adjectives)} ${getRand(subjects)} ${getRand(adverbs)} ${getRand(verbs)}, ${getRand(endings)}`;
 
     if (sleepInterval) clearInterval(sleepInterval);
@@ -219,7 +222,6 @@ module.exports = {
                 "конфискация чувства собственного достоинства"
             ];
 
-            const getRand = (arr) => arr[Math.floor(Math.random() * arr.length)];
             const protNum = Math.floor(Math.random() * 99) + 1;
 
             const message = `Стоп, @${context.username}, вы нарушаете протокол ${getRand(protocols)}. Акт "${getRand(violations)}" карается законом. Протокол №${protNum} (${getRand(punishments)}). Примите покорную позу и ожидайте наказания. Оставайтесь в поле умиротворения до окончания процедуры. Аве Император!`;
@@ -416,19 +418,54 @@ module.exports = {
         }
     },
 
-    '!neurolink': {
-        admin: true,
+    // '!neurolink': {
+    //     admin: true,
+    //     execute: (deps, target, context) => {
+    //         startRecording();
+    //         deps.client.say(target, ` @${context.username} Нейроинтерфейс активирован. Система слушает.`);
+    //     }
+    // },
+
+    // '!neurounlink': {
+    //     admin: true,
+    //     execute: (deps, target, context) => {
+    //         stopRecording();
+    //         deps.client.say(target, ` @${context.username} Нейроинтерфейс отключен. Режим тишины.`);
+    //     }
+    // }
+
+    '!спать': {
+        public: true,
         execute: (deps, target, context) => {
-            startRecording();
-            deps.client.say(target, ` @${context.username} Нейроинтерфейс активирован. Система слушает.`);
+            const now = new Date();
+            const bedTime = new Date();
+            bedTime.setHours(22, 0, 0, 0);
+            if (now > bedTime) bedTime.setDate(bedTime.getDate() + 1);
+            
+            const diff = bedTime - now;
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            const timeStr = `${h} ч. ${m} мин. ${s} сек.`;
+
+            // Используем внешние массивы и функцию getRand
+            const message = `мой ${getRand(adjectives)} ${getRand(subjects)} отходит ко сну через ${timeStr}`;
+
+            deps.say(target, context, message);
         }
     },
 
-    '!neurounlink': {
-        admin: true,
+    '!кисуулик': {
+        public: true,
         execute: (deps, target, context) => {
-            stopRecording();
-            deps.client.say(target, ` @${context.username} Нейроинтерфейс отключен. Режим тишины.`);
+            const kisulik = [
+                "==\\\\-хэ/",
+                "88888888yyyyyyyyyyyyyyyyyyyyyyuuuuuuuuuuuuu880-9\\;'",
+                "0- 0-------\\[p'=09",
+                "шшщ98г69-х=0зэ\\"
+            ]
+
+            deps.say(target, context, `${getRand(kisulik)}`);
         }
     }
 }
