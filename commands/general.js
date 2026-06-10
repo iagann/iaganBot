@@ -401,7 +401,7 @@ module.exports = {
 
     '!трек': {
         execute: async (deps, target, context, args) => {
-            const allowedUsers = ["iagan3228", "iaganBot", "mordukk", "TekkenKing64", "Doggy_DOX", "whisper_me_ahri_rule_34", "roma_live1", "yanva___", "Flanex"];
+            const allowedUsers = ["iagan3228", "iaganBot", "mordukk", "TekkenKing64", "Doggy_DOX", "whisper_me_ahri_rule_34", "roma_live1", "yanva___", "Flanex", "5O9Oti"];
             const username = context['display-name'];
             if (!username || !allowedUsers.includes(username)) {
                 deps.say(target, context, `Недоверие к пользователю ${username}`);
@@ -537,6 +537,14 @@ module.exports = {
             const now = new Date();
             const bedTime = new Date();
             bedTime.setHours(22, 0, 0, 0);
+            const wakeTime = new Date();
+            wakeTime.setHours(5, 0, 0, 0); // 22:00 + 7 часов
+            const isSleeping =
+                now.getHours() >= 22 || now.getHours() < 5;
+            if (isSleeping) {
+                deps.say(target, context, 'Время спать!');
+                return;
+            }
             if (now > bedTime) bedTime.setDate(bedTime.getDate() + 1);
             
             const diff = bedTime - now;
@@ -545,9 +553,7 @@ module.exports = {
             const s = Math.floor((diff % 60000) / 1000);
             const timeStr = `${h} ч. ${m} мин. ${s} сек.`;
 
-            // Используем внешние массивы и функцию getRand
             const message = `мой ${getRand(adjectives)} ${getRand(subjects)} отходит ко сну через ${timeStr}`;
-
             deps.say(target, context, message);
         }
     },
